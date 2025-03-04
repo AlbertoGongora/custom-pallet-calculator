@@ -1,0 +1,46 @@
+/* 📌 Contenedor de subida de archivos */
+.file-uploader {
+  border: 2px dashed white;
+  padding: 20px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  transition: background-color 0.3s ease-in-out;
+}
+
+/* 📌 Área de arrastre */
+.upload-area {
+  padding: 20px;
+  text-align: center;
+  background-color: #222;
+  border-radius: 5px;
+}
+
+.upload-area:hover {
+  background-color: #333;
+}
+
+.upload-area p {
+  margin: 0;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* 📌 Mensajes de advertencia y error */
+.warning {
+  color: yellow;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+.error-message {
+  color: red;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+/* 📌 Estilos para archivos cargados */
+.file-uploader p {
+  font-size: 16px;
+  margin-top: 5px;
+}

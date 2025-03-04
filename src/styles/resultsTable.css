@@ -1,0 +1,46 @@
+.results-container {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #222;
+  border-radius: 8px;
+}
+
+.results-table, .summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.results-table th, .results-table td,
+.summary-table th, .summary-table td {
+  border: 1px solid white;
+  padding: 10px;
+  text-align: center;
+}
+
+.results-table th, .summary-table th {
+  background-color: #444;
+  color: white;
+}
+
+.operator-section {
+  margin-top: 20px;
+}
+
+.operator-section input[type="text"] {
+  padding: 5px;
+  width: 200px;
+  background-color: #333;
+  color: white;
+}
+
+.print-button {
+  background-color: #008cba;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.print-button:hover {
+  background-color: #005f75;
+}
