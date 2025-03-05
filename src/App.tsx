@@ -2,7 +2,7 @@ import React from "react";
 import FileUploader from "./features/upload/FileUploader";
 import ResultsTable from "./features/results/ResultsTable";
 import usePalletData from "./hooks/usePalletData"; // 🔥 Importamos el hook
-import "./styles/app.css";
+import "./styles/App.css";
 
 const App: React.FC = () => {
   // 🔹 Usamos el hook para manejar el estado
