@@ -1,12 +1,11 @@
 export const EXCEL_COLUMNS = {
-    lote: ['Lote'], // Identifica el producto
-    cantidad: ['Cantidad'], // Total de unidades recibidas
-    unidadCaja: ['Unidades por Caja'], // Unidades por caja para calcular las cajas totales
-  };
-  
-  export const PACKING_LIST_COLUMNS = {
-    pallet: ['Pallet'], // Número de pallet
-    lote: ['Lote'], // Lote asignado a ese pallet
-    cantidad: ['Cantidad'], // Unidades en ese pallet
-  };
-  
+  lote: ['CODLOT'], // Identifica el producto
+  cantidad: ['CANTHOST'], // Total de unidades recibidas
+  unidadCaja: ['UNIEMB'], // Unidades por caja para calcular las cajas totales
+};
+
+export const PACKING_LIST_COLUMNS = {
+  pallet: ['CRT No'], // Número de pallet
+  lote: ['Batch Number'], // Lote asignado a ese pallet
+  cantidad: ['Qty'], // Unidades en ese pallet
+};

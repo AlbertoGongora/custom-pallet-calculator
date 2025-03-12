@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { processExcelFile, ProcessedData } from '../processing/excelProcessor';
-import { processPackingList, PackingListData } from '../processing/packingListProcessor';
 import '../../styles/fileUploader.css';
+import { processUploadedFile } from '../../services/fileService';
+import { ProcessedData } from '../processing/excelProcessor';
+import { PackingListData } from '../processing/packingListProcessor';
 
 interface FileUploaderProps {
   onFilesUploaded: (excelData: ProcessedData[], packingList: PackingListData[]) => void;
@@ -11,34 +12,39 @@ interface FileUploaderProps {
 const FileUploader: React.FC<FileUploaderProps> = ({ onFilesUploaded }) => {
   const [excelFile, setExcelFile] = useState<File | null>(null);
   const [packingListFile, setPackingListFile] = useState<File | null>(null);
+  const [excelData, setExcelData] = useState<ProcessedData[] | null>(null);
+  const [packingListData, setPackingListData] = useState<PackingListData[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [missingFileMessage, setMissingFileMessage] = useState<string | null>(null);
 
   /**
    * 📌 `processFile`
-   * Determina el tipo de archivo y lo procesa adecuadamente.
+   * Procesa el archivo y lo almacena en el estado.
    */
   const processFile = async (file: File) => {
     try {
-      const fileType = file.name.split('.').pop()?.toLowerCase();
+      const result = await processUploadedFile(file);
+      console.log(result);
+      
 
-      if (fileType === 'pdf' || fileType === 'png' || fileType === 'jpg' || fileType === 'jpeg') {
-        setPackingListFile(file);
-        const packingListData = await processPackingList(file);
-        if (excelFile) {
-          onFilesUploaded(await processExcelFile(excelFile), packingListData);
-        }
-      } else if (fileType === 'xlsx' || fileType === 'xls') {
-        const processedData = await processExcelFile(file);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+
+      if (result.excelData) {
         setExcelFile(file);
+        setExcelData(result.excelData);
+      }
 
-        if (packingListFile) {
-          onFilesUploaded(processedData, await processPackingList(packingListFile));
-        } else {
-          setMissingFileMessage('❗ Falta subir el archivo Packing List');
-        }
-      } else {
-        setError('Formato de archivo no soportado.');
+      if (result.packingListData) {
+        setPackingListFile(file);
+        setPackingListData(result.packingListData);
+      }
+
+      // 🔥 Cuando ambos archivos han sido procesados, los enviamos juntos
+      if (excelData && packingListData) {
+        onFilesUploaded(excelData, packingListData);
       }
     } catch (err) {
       console.error(err);
