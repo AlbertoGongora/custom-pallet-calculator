@@ -31,7 +31,7 @@ export const processUploadedFile = async (file: File): Promise<FileProcessingRes
       if (detectedType === 'excel') {
         return { excelData: await processExcelFile(file) };
       } else if (detectedType === 'packingList') {
-        return { packingListData: await processPackingList(file) };
+        return { packingListData: await processPackingList(file, null) };
       } else {
         return { error: 'El archivo Excel no tiene las columnas esperadas.' };
       }

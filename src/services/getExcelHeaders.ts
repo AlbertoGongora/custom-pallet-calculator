@@ -28,20 +28,26 @@ export const getExcelHeaders = async (
 
         // 🔹 Normalizamos las cabeceras (eliminamos saltos de línea y espacios extra)
         const rawHeaders = jsonData[0] as string[];
-        const headers = rawHeaders.map((h) => h.replace(/[\r\n]+/g, ' ').trim());
+        const normalizedHeaders = rawHeaders.map(h =>
+          h.replace(/[\r\n]+/g, ' ')  // 🔥 Elimina saltos de línea (\r\n)
+           .replace(/\s+/g, ' ')      // 🔥 Reemplaza múltiples espacios por uno solo
+           .trim()
+           .toLowerCase()
+        );
 
-        const rows = jsonData.slice(1).filter((row) => row.length > 0) as (string | number)[][];
-
-        console.log('primer header', headers);
-        console.log(PACKING_LIST_COLUMNS);
-        
-        console.log('filas' , rows);
+        const rows = jsonData.slice(1).filter(row => row.length > 0) as (string | number)[][];
 
         // 🔍 Detectamos si el archivo es Packing List o Excel Base
-        const isExcelBase = EXCEL_COLUMNS.lote.some((col) => headers.includes(col));
-        const isPackingList = PACKING_LIST_COLUMNS.lote.some((col) => headers.includes(col));
+        const isExcelBase = EXCEL_COLUMNS.lote.some(col =>
+          normalizedHeaders.includes(col.replace(/[\r\n]+/g, ' ').trim().toLowerCase())
+        );
+        const isPackingList = PACKING_LIST_COLUMNS.lote.some(col =>
+          normalizedHeaders.includes(col.replace(/[\r\n]+/g, ' ').trim().toLowerCase())
+        );
 
         if (!isExcelBase && !isPackingList) {
+          console.error("🚨 ERROR: No se detectaron las columnas esperadas.");
+          console.error("🔎 Cabeceras encontradas:", normalizedHeaders);
           reject('El archivo no tiene las columnas esperadas.');
           return;
         }
@@ -51,8 +57,8 @@ export const getExcelHeaders = async (
         const columnIndices: Record<string, number> = {};
 
         Object.entries(validColumns).forEach(([key, possibleNames]) => {
-          const index = headers.findIndex((header) =>
-            possibleNames.map((name) => name.replace(/[\r\n]+/g, ' ').trim()).includes(header)
+          const index = normalizedHeaders.findIndex(header =>
+            possibleNames.map(name => name.replace(/[\r\n]+/g, ' ').trim().toLowerCase()).includes(header)
           );
           if (index !== -1) {
             columnIndices[key] = index;
@@ -69,8 +75,11 @@ export const getExcelHeaders = async (
             const palletNumber = typeof palletValue === 'number' ? palletValue : parseInt(palletValue as string, 10) || '';
 
             // 🔍 Separar lotes y cantidades por saltos de línea
-            const lotes = row[columnIndices.lote] ? (row[columnIndices.lote] as string).split(/\r?\n/) : [];
-            const cantidades = row[columnIndices.cantidad] ? (row[columnIndices.cantidad] as string).split(/\r?\n/) : [];
+            const lotesRaw = row[columnIndices.lote];
+            const cantidadesRaw = row[columnIndices.cantidad];
+
+            const lotes = typeof lotesRaw === 'string' ? lotesRaw.split(/\r?\n/) : [lotesRaw?.toString() || ""];
+            const cantidades = typeof cantidadesRaw === 'string' ? cantidadesRaw.split(/\r?\n/) : [cantidadesRaw?.toString() || "0"];
 
             // 🔹 Iteramos sobre cada lote y asignamos su cantidad correspondiente
             lotes.forEach((lote, index) => {
@@ -90,9 +99,7 @@ export const getExcelHeaders = async (
           }
         });
 
-        console.log("📌 Datos extraídos:", extractedData);
-
-        resolve({ headers, rows: extractedData });
+        resolve({ headers: normalizedHeaders, rows: extractedData });
       } catch (error) {
         console.error('Error al procesar el archivo:', error);
         reject('Error al leer los datos del archivo.');

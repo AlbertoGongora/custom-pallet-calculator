@@ -19,32 +19,45 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onFilesUploaded }) => {
 
   /**
    * 📌 `processFile`
-   * Procesa el archivo y lo almacena en el estado.
+   * Determina el tipo de archivo y lo procesa adecuadamente.
    */
   const processFile = async (file: File) => {
     try {
       const result = await processUploadedFile(file);
-      console.log(result);
-      
-
+  
       if (result.error) {
         setError(result.error);
         return;
       }
 
+      setError(null); // ✅ Eliminamos errores previos
+
+      // ✅ Guardamos los nuevos datos sin perder los anteriores
+      const newExcelData = result.excelData ? result.excelData : excelData;
+      const newPackingListData = result.packingListData ? result.packingListData : packingListData;
+
+      setExcelData(newExcelData);
+      setPackingListData(newPackingListData);
+
       if (result.excelData) {
         setExcelFile(file);
-        setExcelData(result.excelData);
       }
 
       if (result.packingListData) {
         setPackingListFile(file);
-        setPackingListData(result.packingListData);
       }
 
-      // 🔥 Cuando ambos archivos han sido procesados, los enviamos juntos
-      if (excelData && packingListData) {
-        onFilesUploaded(excelData, packingListData);
+      console.log("✅ Excel Data después de setState:", newExcelData);
+      console.log("✅ Packing List Data después de setState:", newPackingListData);
+
+      // ✅ Comprobamos que ambos datos están listos antes de llamar a `onFilesUploaded`
+      if (newExcelData && newPackingListData && newExcelData.length > 0 && newPackingListData.length > 0) {
+        console.log("🚀 Ejecutando `onFilesUploaded`...");
+        onFilesUploaded(newExcelData, newPackingListData);
+        setMissingFileMessage(null);
+      } else {
+        console.log("⚠️ Falta un archivo para procesar.");
+        setMissingFileMessage("❗ Esperando el otro archivo para procesar.");
       }
     } catch (err) {
       console.error(err);
@@ -81,14 +94,16 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onFilesUploaded }) => {
     <section className="file-uploader">
       <div {...getRootProps()} className="upload-area">
         <input {...getInputProps()} />
-        <p>Arrastra uno o dos archivos (Excel, PDF o Imagen) o haz clic para seleccionar</p>
+        <p>Arrastra los archivos (Excel Base y Packing List) o haz clic para seleccionarlos</p>
       </div>
 
-      {excelFile && <p>📊 Archivo Base cargado: {excelFile.name}</p>}
-      {packingListFile && <p>📄 Packing List cargado: {packingListFile.name}</p>}
+      {/* 📂 Mostramos los archivos cargados */}
+      {excelFile && <p>📊 Archivo Base cargado</p>}
+      {packingListFile && <p>📄 Packing List cargado</p>}
 
-      {missingFileMessage && <p className="warning">{missingFileMessage}</p>}
-      {error && <p className="error-message">{error}</p>}
+      {/* 🚨 Mensajes de error o espera */}
+      {missingFileMessage && <p className="warning">❗ {missingFileMessage}</p>}
+      {error && <p className="error-message">❌ {error}</p>}
     </section>
   );
 };

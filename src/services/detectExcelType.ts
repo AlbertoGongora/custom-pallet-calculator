@@ -9,18 +9,12 @@ import { getExcelHeaders } from './getExcelHeaders';
 export const detectExcelType = async (file: File): Promise<'excel' | 'packingList' | null> => {
   try {
     const { headers } = await getExcelHeaders(file);
-    console.log("🔍 Cabeceras detectadas:", headers);
-    console.log("📌 PACKING_LIST_COLUMNS:", PACKING_LIST_COLUMNS);
-    console.log("📌 EXCEL_COLUMNS:", EXCEL_COLUMNS);
 
     // 🔥 Asegurar que la comparación ignora espacios y diferencias en mayúsculas/minúsculas
     const normalizedHeaders = headers.map(h => h.trim().toLowerCase());
 
     const isExcelBase = EXCEL_COLUMNS.lote.some(col => normalizedHeaders.includes(col.trim().toLowerCase()));
     const isPackingList = PACKING_LIST_COLUMNS.lote.some(col => normalizedHeaders.includes(col.trim().toLowerCase()));
-
-    console.log("✅ ¿Es Excel Base?", isExcelBase);
-    console.log("✅ ¿Es Packing List?", isPackingList);
 
     if (isExcelBase) return 'excel';
     if (isPackingList) return 'packingList';

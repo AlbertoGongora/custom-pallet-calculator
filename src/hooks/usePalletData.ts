@@ -1,51 +1,47 @@
 import { useState } from "react";
-import { ProcessedData } from "../features/processing/excelProcessor";
+import { optimizePallets, OptimizedPallet } from "../services/optimizePallets";
 import { PackingListData } from "../features/processing/packingListProcessor";
-import { optimizePallets, OptimizedPallet } from "../services/optimizationService";
+import { ProcessedData } from "../features/processing/excelProcessor";
 
-/**
- * 📌 **Hook personalizado `usePalletData`**
- * Gestiona los estados y la lógica del procesamiento de pallets.
- */
 const usePalletData = () => {
-  // 🔹 Estados para almacenar los datos cargados
-  const [processedData, setProcessedData] = useState<ProcessedData[]>([]);
-  const [packingListData, setPackingListData] = useState<PackingListData[]>([]);
+  const [excelData, setExcelData] = useState<ProcessedData[] | null>(null);
+  const [packingListData, setPackingListData] = useState<PackingListData[] | null>(null);
+  const [palletOption, setPalletOption] = useState<number>(16); // 🔹 Valor por defecto: 16 cajas
   const [optimizedResults, setOptimizedResults] = useState<OptimizedPallet[]>([]);
-  const [palletOption, setPalletOption] = useState<number>(16);
-  const [isDataLoaded, setIsDataLoaded] = useState(false); // Estado para manejar la visibilidad
+  const [isDataLoaded, setIsDataLoaded] = useState<boolean>(false);
 
-  /**
-   * 📌 **Función `handleFilesUploaded`**
-   * Se ejecuta cuando los archivos son procesados correctamente.
-   * Recibe datos del Excel y del Packing List, los optimiza y actualiza los estados.
-   */
-  const handleFilesUploaded = (excelData: ProcessedData[], packingList: PackingListData[]) => {
-    setProcessedData(excelData);
-    setPackingListData(packingList);
+  const handleFilesUploaded = (newExcelData: ProcessedData[], newPackingListData: PackingListData[]) => {
+    console.log("📂 Archivos subidos:", { newExcelData, newPackingListData });
 
-    // 🔹 Optimiza los pallets una vez que tenemos los datos cargados
-    const optimized = optimizePallets(packingList, palletOption);
-    setOptimizedResults(optimized);
+    // ✅ Guardamos siempre el nuevo dataset y no solo si el anterior era null
+    setExcelData(newExcelData);
+    setPackingListData(newPackingListData);
 
-    // 🔹 Marca que los datos están listos y oculta la sección de subida
-    setIsDataLoaded(true);
+    // 🚀 **Solo ejecutamos la optimización si ambos datasets están cargados**
+    if (newExcelData.length > 0 && newPackingListData.length > 0) {
+      console.log("🚀 Procesando optimización con:", { newPackingListData, newExcelData, palletOption });
+
+      const optimized = optimizePallets(newPackingListData, newExcelData, palletOption);
+      console.log("✅ Resultados optimizados:", optimized);
+
+      setOptimizedResults(optimized);
+      setIsDataLoaded(true);
+    } else {
+      console.warn("⚠️ Falta un archivo para procesar.");
+    }
   };
 
-  /**
-   * 📌 **Función `resetProcess`**
-   * Restaura los estados para iniciar un nuevo pedido.
-   */
   const resetProcess = () => {
-    setProcessedData([]);
-    setPackingListData([]);
+    console.log("🔄 Reiniciando proceso...");
+    setExcelData(null);
+    setPackingListData(null);
     setOptimizedResults([]);
     setIsDataLoaded(false);
   };
 
   return {
-    processedData,
-    packingListData,
+    excelData, 
+    packingListData, 
     optimizedResults,
     palletOption,
     isDataLoaded,
