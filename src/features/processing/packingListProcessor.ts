@@ -28,7 +28,6 @@ export const processPackingList = async (
   try {
     const { rows } = await getExcelHeaders(file);
 
-    // Procesamos los datos del Packing List
     const processedData: PackingListData[] = rows.map(row => ({
       pallet: Number(row.pallet),
       lote: row.lote as string,
@@ -36,21 +35,20 @@ export const processPackingList = async (
       cantidadCajas: undefined, // 🔥 Se calculará después si tenemos `excelData`
     }));
 
-    // 📌 Si ya tenemos el Excel Base, calculamos `cantidadCajas`
+    // 📌 Asegurar que `cantidadCajas` siempre se calcula
     if (excelData) {
       processedData.forEach(packingItem => {
         const matchingLote = excelData.find(excelItem => excelItem.lote === packingItem.lote);
         if (matchingLote) {
-          packingItem.cantidadCajas = Math.floor(packingItem.cantidad / matchingLote.unidadCaja);
+          packingItem.cantidadCajas = Math.max(1, Math.floor(packingItem.cantidad / matchingLote.unidadCaja));
         }
       });
     }
 
-    console.log('📌 Datos del Packing List procesados:', processedData);
-
+    console.log('📌 Packing List procesado con cantidades:', processedData);
     return processedData;
   } catch (error) {
-    console.error('Error al procesar el archivo Packing List:', error);
+    console.error('❌ Error en el procesamiento del Packing List:', error);
     throw error;
   }
 };

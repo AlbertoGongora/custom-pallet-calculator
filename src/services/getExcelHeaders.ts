@@ -21,29 +21,35 @@ export const getExcelHeaders = async (
 
         const jsonData = XLSX.utils.sheet_to_json<string[]>(sheet, { header: 1 });
 
+        console.log("📌 [1] Datos sin procesar del Excel:", jsonData); // 🔍 Verificar contenido crudo
+
         if (jsonData.length < 2) {
           reject('El archivo Excel no tiene datos suficientes.');
           return;
         }
 
-        // 🔹 Normalizamos las cabeceras (eliminamos saltos de línea y espacios extra)
+        // 🔹 Normalizamos las cabeceras
         const rawHeaders = jsonData[0] as string[];
         const normalizedHeaders = rawHeaders.map(h =>
-          h.replace(/[\r\n]+/g, ' ')  // 🔥 Elimina saltos de línea (\r\n)
-           .replace(/\s+/g, ' ')      // 🔥 Reemplaza múltiples espacios por uno solo
+          h.replace(/[\r\n]+/g, ' ')  
+           .replace(/\s+/g, ' ')      
            .trim()
            .toLowerCase()
         );
 
+        console.log("📌 [2] Cabeceras normalizadas:", normalizedHeaders); // 🔍 Revisar cabeceras
+
         const rows = jsonData.slice(1).filter(row => row.length > 0) as (string | number)[][];
 
-        // 🔍 Detectamos si el archivo es Packing List o Excel Base
+        // 🔍 Detectamos si es Packing List o Excel Base
         const isExcelBase = EXCEL_COLUMNS.lote.some(col =>
           normalizedHeaders.includes(col.replace(/[\r\n]+/g, ' ').trim().toLowerCase())
         );
         const isPackingList = PACKING_LIST_COLUMNS.lote.some(col =>
           normalizedHeaders.includes(col.replace(/[\r\n]+/g, ' ').trim().toLowerCase())
         );
+
+        console.log("📌 [3] ¿Es Excel Base?:", isExcelBase, " | ¿Es Packing List?:", isPackingList); // 🔍 Verificar tipo de archivo
 
         if (!isExcelBase && !isPackingList) {
           console.error("🚨 ERROR: No se detectaron las columnas esperadas.");
@@ -65,32 +71,31 @@ export const getExcelHeaders = async (
           }
         });
 
+        console.log("📌 [4] Índices de columnas detectados:", columnIndices); // 🔍 Revisar índices de columnas
+
         // 📌 Extraemos los datos de las columnas requeridas
         const extractedData: Record<string, string | number>[] = [];
 
         rows.forEach((row) => {
           if (isPackingList) {
-            // 🔥 Lógica especial para Packing List (Múltiples lotes por pallet)
             const palletValue = row[columnIndices.pallet];
             const palletNumber = typeof palletValue === 'number' ? palletValue : parseInt(palletValue as string, 10) || '';
 
-            // 🔍 Separar lotes y cantidades por saltos de línea
+            // 🔍 Separar lotes y cantidades
             const lotesRaw = row[columnIndices.lote];
             const cantidadesRaw = row[columnIndices.cantidad];
 
             const lotes = typeof lotesRaw === 'string' ? lotesRaw.split(/\r?\n/) : [lotesRaw?.toString() || ""];
             const cantidades = typeof cantidadesRaw === 'string' ? cantidadesRaw.split(/\r?\n/) : [cantidadesRaw?.toString() || "0"];
 
-            // 🔹 Iteramos sobre cada lote y asignamos su cantidad correspondiente
             lotes.forEach((lote, index) => {
               extractedData.push({
                 pallet: palletNumber,
                 lote: lote.trim(),
-                cantidad: cantidades[index] ? parseInt(cantidades[index], 10) || 0 : 0, // 🔥 Convierte cantidad a número
+                cantidad: cantidades[index] ? parseInt(cantidades[index], 10) || 0 : 0, 
               });
             });
           } else {
-            // 🔥 Lógica para Excel Base (Extraer datos sin procesar)
             extractedData.push({
               lote: row[columnIndices.lote] as string,
               cantidad: row[columnIndices.cantidad] as number,
@@ -99,9 +104,11 @@ export const getExcelHeaders = async (
           }
         });
 
+        console.log("📌 [5] Datos extraídos correctamente:", extractedData); // 🔍 Revisar datos finales antes de devolverlos
+
         resolve({ headers: normalizedHeaders, rows: extractedData });
       } catch (error) {
-        console.error('Error al procesar el archivo:', error);
+        console.error('❌ Error al procesar el archivo:', error);
         reject('Error al leer los datos del archivo.');
       }
     };

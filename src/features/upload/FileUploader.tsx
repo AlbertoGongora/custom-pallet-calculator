@@ -4,16 +4,20 @@ import '../../styles/fileUploader.css';
 import { processUploadedFile } from '../../services/fileService';
 import { ProcessedData } from '../processing/excelProcessor';
 import { PackingListData } from '../processing/packingListProcessor';
+import usePalletData from '../../hooks/usePalletData';
 
 interface FileUploaderProps {
   onFilesUploaded: (excelData: ProcessedData[], packingList: PackingListData[]) => void;
 }
 
-const FileUploader: React.FC<FileUploaderProps> = ({ onFilesUploaded }) => {
-  const [excelFile, setExcelFile] = useState<File | null>(null);
-  const [packingListFile, setPackingListFile] = useState<File | null>(null);
-  const [excelData, setExcelData] = useState<ProcessedData[] | null>(null);
-  const [packingListData, setPackingListData] = useState<PackingListData[] | null>(null);
+const FileUploader: React.FC<FileUploaderProps> = ({ onFilesUploaded }) => {  
+  const {
+    excelFile, setExcelFile,
+    packingListFile, setPackingListFile,
+    excelData, setExcelData,
+    packingListData, setPackingListData,
+  } = usePalletData();
+  
   const [error, setError] = useState<string | null>(null);
   const [missingFileMessage, setMissingFileMessage] = useState<string | null>(null);
 
@@ -35,9 +39,17 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onFilesUploaded }) => {
       // ✅ Guardamos los nuevos datos sin perder los anteriores
       const newExcelData = result.excelData ? result.excelData : excelData;
       const newPackingListData = result.packingListData ? result.packingListData : packingListData;
-
+      console.log("✅ Excel Data después de procesar:", newExcelData);
+      console.log("✅ Packing List Data después de procesar:", newPackingListData);
+      
       setExcelData(newExcelData);
       setPackingListData(newPackingListData);
+
+      // ✅ Guardamos los nuevos archivos sin perder los anteriores
+      const newExcelFile = result.excelData ? file : excelFile;
+      const newPackingListFile = result.packingListData ? file : packingListFile;
+      console.log("✅ Excel File luego de procesar:", newExcelFile);
+      console.log("✅ Packing List File luego de procesar:", newPackingListFile);
 
       if (result.excelData) {
         setExcelFile(file);

@@ -24,9 +24,13 @@ const ResultsTable: React.FC<ResultsTableProps> = ({ optimizedResults }) => {
     if (!tableRef.current) return;
 
     try {
-      const canvas = await html2canvas(tableRef.current, { scale: 2 });
-      const imgData = canvas.toDataURL("image/png");
+      const canvas = await html2canvas(tableRef.current, { 
+        scale: 3, // 🔹 Mayor resolución para mejor calidad
+        backgroundColor: "#FFFFFF", // 🔥 Forzar fondo blanco
+        useCORS: true, // 🔹 Evita problemas de seguridad con imágenes externas
+      });
 
+      const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF("p", "mm", "a4");
       const imgWidth = 190;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
@@ -35,6 +39,47 @@ const ResultsTable: React.FC<ResultsTableProps> = ({ optimizedResults }) => {
       pdf.save("Optimización_Pallets.pdf");
     } catch (error) {
       console.error("❌ Error al generar el PDF:", error);
+    }
+  };
+
+  /**
+   * 📌 **Función `printResults`**
+   * Imprime directamente la tabla en formato limpio.
+   */
+  const printResults = () => {
+    const printWindow = window.open("", "_blank");
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Optimización de Pallets</title>
+            <style>
+              body { font-family: Arial, sans-serif; padding: 20px; color: black; }
+              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+              th, td { border: 1px solid black; padding: 10px; text-align: center; }
+              th { background-color: #f2f2f2; }
+            </style>
+          </head>
+          <body>
+            <h2>📦 Lotes Procesados</h2>
+            <table>
+              <thead>
+                <tr><th>Lote</th><th>Pallets</th></tr>
+              </thead>
+              <tbody>
+                ${optimizedResults.map(data => `
+                  <tr>
+                    <td>${data.lote}</td>
+                    <td>${data.pallets.length > 0 ? data.pallets.join(", ") : "Sin pallets asignados"}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.print();
     }
   };
 
@@ -79,28 +124,20 @@ const ResultsTable: React.FC<ResultsTableProps> = ({ optimizedResults }) => {
                 <td>📦 Cajas movidas:</td>
                 <td>{optimizedResults.length > 0 ? optimizedResults[optimizedResults.length - 1].cajasMovidas : 0}</td>
               </tr>
-              <tr>
-                <td>⏳ Tiempo:</td>
-                <td>________________</td>
-              </tr>
             </tbody>
           </table>
-
-          {/* 📌 Sección de operarios */}
-          <h3>👤 Operarios:</h3>
-          <label><input type="checkbox" /> ✅ 1 Operario</label>
-          <br />
-          <label><input type="checkbox" /> ✅ Varios Operarios</label>
-          <br />
-          <br />
-          <label>✏️ Nombre: <input type="text" placeholder="Escribe tu nombre aquí" /></label>
         </div>
       )}
 
-      {/* 📌 Botón para descargar en PDF */}
-      <button className="pdf-button" onClick={generatePDF}>
-        📄 Descargar PDF
-      </button>
+      {/* 📌 Botones para exportar */}
+      <div className="button-container">
+        <button className="pdf-button" onClick={generatePDF}>
+          📄 Descargar PDF
+        </button>
+        <button className="print-button" onClick={printResults}>
+          🖨️ Imprimir
+        </button>
+      </div>
     </section>
   );
 };

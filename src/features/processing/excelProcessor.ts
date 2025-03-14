@@ -19,13 +19,14 @@ export interface ProcessedData {
  */
 export const processExcelFile = async (file: File): Promise<ProcessedData[]> => {
   try {
-    const { rows } = await getExcelHeaders(file); // 🔥 Extraemos solo los datos relevantes
+    const { rows } = await getExcelHeaders(file);
 
-    // Procesamos los datos
+    console.log("📌 Datos extraídos del Excel antes de procesar:", rows); // 🔍 Verificar si rows tiene datos
+
     return rows.map((row) => {
       const cantidad = row['cantidad'] as number;
       const unidadCaja = row['unidadCaja'] as number;
-      const totalCajas = unidadCaja > 0 ? Math.floor(cantidad / unidadCaja) : 0; // Evitamos división por 0
+      const totalCajas = unidadCaja > 0 ? Math.floor(cantidad / unidadCaja) : 0;
 
       return {
         lote: row['lote'] as string,
@@ -35,7 +36,8 @@ export const processExcelFile = async (file: File): Promise<ProcessedData[]> => 
       };
     });
   } catch (error) {
-    console.error('Error al procesar el archivo Excel:', error);
+    console.error('❌ Error al procesar el archivo Excel:', error);
     throw error;
   }
 };
+
