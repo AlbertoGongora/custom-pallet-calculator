@@ -18,10 +18,7 @@ export const getExcelHeaders = async (
         const workbook = XLSX.read(data, { type: 'array' });
         const sheetName = workbook.SheetNames[0]; // 📌 Tomamos la primera hoja
         const sheet = workbook.Sheets[sheetName];
-
         const jsonData = XLSX.utils.sheet_to_json<string[]>(sheet, { header: 1 });
-
-        console.log("📌 [1] Datos sin procesar del Excel:", jsonData); // 🔍 Verificar contenido crudo
 
         if (jsonData.length < 2) {
           reject('El archivo Excel no tiene datos suficientes.');
@@ -37,8 +34,6 @@ export const getExcelHeaders = async (
            .toLowerCase()
         );
 
-        console.log("📌 [2] Cabeceras normalizadas:", normalizedHeaders); // 🔍 Revisar cabeceras
-
         const rows = jsonData.slice(1).filter(row => row.length > 0) as (string | number)[][];
 
         // 🔍 Detectamos si es Packing List o Excel Base
@@ -48,8 +43,6 @@ export const getExcelHeaders = async (
         const isPackingList = PACKING_LIST_COLUMNS.lote.some(col =>
           normalizedHeaders.includes(col.replace(/[\r\n]+/g, ' ').trim().toLowerCase())
         );
-
-        console.log("📌 [3] ¿Es Excel Base?:", isExcelBase, " | ¿Es Packing List?:", isPackingList); // 🔍 Verificar tipo de archivo
 
         if (!isExcelBase && !isPackingList) {
           console.error("🚨 ERROR: No se detectaron las columnas esperadas.");
@@ -70,8 +63,6 @@ export const getExcelHeaders = async (
             columnIndices[key] = index;
           }
         });
-
-        console.log("📌 [4] Índices de columnas detectados:", columnIndices); // 🔍 Revisar índices de columnas
 
         // 📌 Extraemos los datos de las columnas requeridas
         const extractedData: Record<string, string | number>[] = [];
@@ -103,8 +94,6 @@ export const getExcelHeaders = async (
             });
           }
         });
-
-        console.log("📌 [5] Datos extraídos correctamente:", extractedData); // 🔍 Revisar datos finales antes de devolverlos
 
         resolve({ headers: normalizedHeaders, rows: extractedData });
       } catch (error) {

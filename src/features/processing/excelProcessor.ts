@@ -21,8 +21,6 @@ export const processExcelFile = async (file: File): Promise<ProcessedData[]> => 
   try {
     const { rows } = await getExcelHeaders(file);
 
-    console.log("📌 Datos extraídos del Excel antes de procesar:", rows); // 🔍 Verificar si rows tiene datos
-
     return rows.map((row) => {
       const cantidad = row['cantidad'] as number;
       const unidadCaja = row['unidadCaja'] as number;

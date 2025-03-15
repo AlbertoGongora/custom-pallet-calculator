@@ -45,7 +45,6 @@ export const processPackingList = async (
       });
     }
 
-    console.log('📌 Packing List procesado con cantidades:', processedData);
     return processedData;
   } catch (error) {
     console.error('❌ Error en el procesamiento del Packing List:', error);

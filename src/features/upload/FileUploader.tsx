@@ -39,17 +39,9 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onFilesUploaded }) => {
       // ✅ Guardamos los nuevos datos sin perder los anteriores
       const newExcelData = result.excelData ? result.excelData : excelData;
       const newPackingListData = result.packingListData ? result.packingListData : packingListData;
-      console.log("✅ Excel Data después de procesar:", newExcelData);
-      console.log("✅ Packing List Data después de procesar:", newPackingListData);
       
       setExcelData(newExcelData);
       setPackingListData(newPackingListData);
-
-      // ✅ Guardamos los nuevos archivos sin perder los anteriores
-      const newExcelFile = result.excelData ? file : excelFile;
-      const newPackingListFile = result.packingListData ? file : packingListFile;
-      console.log("✅ Excel File luego de procesar:", newExcelFile);
-      console.log("✅ Packing List File luego de procesar:", newPackingListFile);
 
       if (result.excelData) {
         setExcelFile(file);
@@ -59,17 +51,13 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onFilesUploaded }) => {
         setPackingListFile(file);
       }
 
-      console.log("✅ Excel Data después de setState:", newExcelData);
-      console.log("✅ Packing List Data después de setState:", newPackingListData);
-
       // ✅ Comprobamos que ambos datos están listos antes de llamar a `onFilesUploaded`
       if (newExcelData && newPackingListData && newExcelData.length > 0 && newPackingListData.length > 0) {
-        console.log("🚀 Ejecutando `onFilesUploaded`...");
         onFilesUploaded(newExcelData, newPackingListData);
         setMissingFileMessage(null);
       } else {
         console.log("⚠️ Falta un archivo para procesar.");
-        setMissingFileMessage("❗ Esperando el otro archivo para procesar.");
+        setMissingFileMessage("Esperando el otro archivo para procesar.");
       }
     } catch (err) {
       console.error(err);
@@ -106,15 +94,16 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onFilesUploaded }) => {
     <section className="file-uploader">
       <div {...getRootProps()} className="upload-area">
         <input {...getInputProps()} />
-        <p>Arrastra los archivos (Excel Base y Packing List) o haz clic para seleccionarlos</p>
+        <p>Arrastra 1 archivo (Excel Base o Packing List) o </p>
+        <p>haz clic para seleccionar primero uno y luego otro.</p>
       </div>
 
       {/* 📂 Mostramos los archivos cargados */}
-      {excelFile && <p>📊 Archivo Base cargado</p>}
+      {excelFile && <p>📊 Archivo Excel Ip6 cargado</p>}
       {packingListFile && <p>📄 Packing List cargado</p>}
 
       {/* 🚨 Mensajes de error o espera */}
-      {missingFileMessage && <p className="warning">❗ {missingFileMessage}</p>}
+      {missingFileMessage && <p className="warning"> {missingFileMessage}</p>}
       {error && <p className="error-message">❌ {error}</p>}
     </section>
   );

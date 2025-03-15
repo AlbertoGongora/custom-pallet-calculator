@@ -13,7 +13,6 @@ export const normalizePackingListData = (
       const excelEntry = excelData.find((e) => e.lote === item.lote);
       if (excelEntry && excelEntry.unidadCaja > 0) {
         const calculatedCajas = Math.floor(item.cantidad / excelEntry.unidadCaja);
-        console.warn(`⚠️ Corrigiendo cantidadCajas para lote ${item.lote}: ${calculatedCajas} cajas.`);
         return { ...item, cantidadCajas: calculatedCajas };
       }
     }

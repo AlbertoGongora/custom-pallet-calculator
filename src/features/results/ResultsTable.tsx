@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from "react";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+// import jsPDF from "jspdf";
+// import html2canvas from "html2canvas";
 import { OptimizedPallet } from "../../services/optimizePallets";
 import "../../styles/resultsTable.css";
 
@@ -13,33 +13,32 @@ const ResultsTable: React.FC<ResultsTableProps> = ({ optimizedResults }) => {
 
   // ✅ Log para verificar que los datos llegan correctamente
   useEffect(() => {
-    console.log("📊 Datos optimizados recibidos en ResultsTable:", optimizedResults);
   }, [optimizedResults]);
 
   /**
    * 📌 **Función `generatePDF`**
    * Captura la tabla de resultados y la exporta como PDF.
    */
-  const generatePDF = async () => {
-    if (!tableRef.current) return;
+  // const generatePDF = async () => {
+  //   if (!tableRef.current) return;
 
-    try {
-      const canvas = await html2canvas(tableRef.current, { 
-        backgroundColor: "#FFFFFF",
-        useCORS: true, // 🔹 Evita problemas de seguridad con imágenes externas
-      });
+  //   try {
+  //     const canvas = await html2canvas(tableRef.current, { 
+  //       backgroundColor: "#FFFFFF",
+  //       useCORS: true, // 🔹 Evita problemas de seguridad con imágenes externas
+  //     });
 
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4");
-      const imgWidth = 190;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+  //     const imgData = canvas.toDataURL("image/png");
+  //     const pdf = new jsPDF("p", "mm", "a4");
+  //     const imgWidth = 190;
+  //     const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-      pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
-      pdf.save("Optimización_Pallets.pdf");
-    } catch (error) {
-      console.error("❌ Error al generar el PDF:", error);
-    }
-  };
+  //     pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
+  //     pdf.save("Optimización_Pallets.pdf");
+  //   } catch (error) {
+  //     console.error("❌ Error al generar el PDF:", error);
+  //   }
+  // };
 
   /**
    * 📌 **Función `printResults`**
@@ -160,9 +159,9 @@ const ResultsTable: React.FC<ResultsTableProps> = ({ optimizedResults }) => {
 
       {/* 📌 Botones para exportar */}
       <div className="button-container">
-        <button className="pdf-button" onClick={generatePDF}>
+        {/* <button className="pdf-button" onClick={generatePDF}>
           📄 Descargar PDF
-        </button>
+        </button> */}
         <button className="print-button" onClick={printResults}>
           🖨️ Imprimir
         </button>

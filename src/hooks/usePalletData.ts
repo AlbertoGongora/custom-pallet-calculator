@@ -13,16 +13,11 @@ const usePalletData = () => {
   const [isDataLoaded, setIsDataLoaded] = useState<boolean>(false);
 
   const handleFilesUploaded = (newExcelData: ProcessedData[], newPackingListData: PackingListData[]) => {
-    console.log("📂 Archivos subidos:", { newExcelData, newPackingListData });
-  
     setExcelData(newExcelData); // ✅ Guardamos los datos del Excel
     setPackingListData(newPackingListData); // ✅ Guardamos los datos del Packing List
   
     if (newExcelData.length > 0 && newPackingListData.length > 0) {
-      console.log("🚀 Procesando optimización con:", { newPackingListData, newExcelData, palletOption });
-  
       const optimized = optimizePallets(newPackingListData, newExcelData, palletOption);
-      console.log("✅ Resultados optimizados:", optimized);
   
       setOptimizedResults(optimized);
       setIsDataLoaded(true);
@@ -31,7 +26,6 @@ const usePalletData = () => {
     }
   };
   
-
   const resetProcess = () => {
     console.log("🔄 Reiniciando proceso...");
     setExcelFile(null);

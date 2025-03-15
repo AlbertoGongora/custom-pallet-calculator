@@ -23,7 +23,6 @@ export const optimizePallets = (
 
   // 🔥 Normalizar los datos antes de procesarlos
   packingListData = normalizePackingListData(packingListData, excelData);
-  console.log("📌 Datos normalizados:", packingListData);
 
   // 📌 Detectar el número más alto de pallet
   const maxPalletNumber = Math.max(...packingListData.map(p => Number(p.pallet)).filter(n => !isNaN(n)), 0);
