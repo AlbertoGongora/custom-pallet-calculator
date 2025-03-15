@@ -48,57 +48,84 @@ export const optimizePallets = (
 
   // 📌 Procesar cada pallet
   palletsAgrupados.forEach((items, palletNumber) => {
-    if (items.length === 1) {
-      // 🔹 Caso 1: Pallet con un solo lote → Se asigna directamente
-      const { lote, cantidadCajas } = items[0];
-      const loteEntry = lotesFinalPrevio.find((entry) => entry.lote === lote);
-      if (loteEntry) {
-        loteEntry.pallets.push({ pallet: `P${palletNumber}`, cantidad: cantidadCajas ?? 0 });
-      }
-    } else {
-      // 🔥 Caso 2: Pallet con múltiples lotes → Se debe reorganizar
+    // 🔥 Caso 2: Pallet con múltiples lotes → Se debe reorganizar primero
+    if (items.length > 1) {
       items.sort((a, b) => (b.cantidadCajas ?? 0) - (a.cantidadCajas ?? 0));
 
-      // 📌 El lote con más cajas **mantiene** el pallet original
+      // 📌 El lote con más cajas **mantiene** el pallet original (si no excede `palletLimit`)
       const lotePrincipal = items[0];
       const loteEntry = lotesFinalPrevio.find((entry) => entry.lote === lotePrincipal.lote);
-      if (loteEntry) {
-        loteEntry.pallets.push({ pallet: `P${palletNumber}`, cantidad: lotePrincipal.cantidadCajas ?? 0 });
+
+      if (loteEntry && lotePrincipal.cantidadCajas) {
+        let cajasRestantes = lotePrincipal.cantidadCajas;
+
+        while (cajasRestantes > 0) {
+          const cajasEnPallet = Math.min(cajasRestantes, palletLimit);
+          const newPallet = cajasRestantes === lotePrincipal.cantidadCajas ? `P${palletNumber}` : `PE${nextPalletNumber}`;
+
+          loteEntry.pallets.push({ pallet: newPallet, cantidad: cajasEnPallet });
+
+          if (cajasRestantes !== lotePrincipal.cantidadCajas) {
+            palletsTracking.push({ pallet: newPallet, detalle: [`P${palletNumber} → ${cajasEnPallet}`] });
+            totalExtraPallets++;
+            totalCajasMovidas += cajasEnPallet;
+            nextPalletNumber++;
+          }
+
+          cajasRestantes -= cajasEnPallet;
+        }
       }
 
       // 🔄 Redistribuir los otros lotes en el pallet
       for (let i = 1; i < items.length; i++) {
         const { lote, cantidadCajas } = items[i];
         const loteEntry = lotesFinalPrevio.find((entry) => entry.lote === lote);
-
         if (!loteEntry || cantidadCajas === undefined) continue;
 
         let reubicado = false;
 
+        // 📌 PASO 1: Intentar reutilizar un pallet ya existente (`P` o `PE`)
+        let palletReutilizado: { pallet: string; cantidad: number } | null = null;
+
+        // 🔹 **Buscar espacio en los `P` originales primero**
         for (const p of loteEntry.pallets) {
-          if (p.cantidad + cantidadCajas <= palletLimit) {
-            p.cantidad += cantidadCajas;
-
-            // 🔥 Guardar bien el movimiento de varios pallets si aplica
-            const existingTracking = palletsTracking.find(entry => entry.pallet === p.pallet);
-            if (existingTracking) {
-              existingTracking.detalle.push(`P${palletNumber} → ${cantidadCajas}`);
-            } else {
-              palletsTracking.push({ pallet: p.pallet, detalle: [`P${palletNumber} → ${cantidadCajas}`] });
-            }
-
-            totalCajasMovidas += cantidadCajas;
-            reubicado = true;
+          if (!p.pallet.startsWith("PE") && p.cantidad + cantidadCajas <= palletLimit) {
+            palletReutilizado = p;
             break;
           }
         }
 
-        // 🔥 Si no hay espacio, creamos un nuevo pallet
+        // 🔹 **Si no hay espacio en `P`, buscar en `PE` existentes**
+        if (!palletReutilizado) {
+          for (const p of loteEntry.pallets) {
+            if (p.pallet.startsWith("PE") && p.cantidad + cantidadCajas <= palletLimit) {
+              palletReutilizado = p;
+              break;
+            }
+          }
+        }
+
+        // 📌 PASO 1.3: Si encontramos un pallet con espacio, movemos las cajas allí
+        if (palletReutilizado) {
+          palletReutilizado.cantidad += cantidadCajas;
+
+          // 🔥 Guardar tracking del movimiento
+          const existingTracking = palletsTracking.find(entry => entry.pallet === palletReutilizado!.pallet);
+          if (existingTracking) {
+            existingTracking.detalle.push(`P${palletNumber} → ${cantidadCajas}`);
+          } else {
+            palletsTracking.push({ pallet: palletReutilizado!.pallet, detalle: [`P${palletNumber} → ${cantidadCajas}`] });
+          }
+
+          totalCajasMovidas += cantidadCajas;
+          reubicado = true;
+        }
+
+        // 📌 PASO 2: Si no encontramos un pallet con espacio suficiente, **creamos un nuevo `PE`**
         if (!reubicado) {
           const newPallet = `PE${nextPalletNumber}`;
           loteEntry.pallets.push({ pallet: newPallet, cantidad: cantidadCajas });
 
-          // 📌 Almacenamos múltiples movimientos en un solo pallet
           palletsTracking.push({ pallet: newPallet, detalle: [`P${palletNumber} → ${cantidadCajas}`] });
 
           nextPalletNumber++;
@@ -107,11 +134,76 @@ export const optimizePallets = (
         }
       }
     }
-  });
 
-  console.log("📦 Pallets extra creados:", totalExtraPallets);
-  console.log("📦 Cajas movidas:", totalCajasMovidas);
-  console.log("📦 Tracking de pallets:", palletsTracking);
+    // 🔹 Caso 1: Pallet con un solo lote → Se asigna directamente pero se verifica si excede `palletLimit`
+    else {
+      const { lote, cantidadCajas } = items[0];
+      const loteEntry = lotesFinalPrevio.find((entry) => entry.lote === lote);
+
+      if (loteEntry && cantidadCajas) {
+        if (cantidadCajas > palletLimit) {
+          // 🔥 Si el pallet excede el límite, se divide en varios pallets
+          let cajasRestantes = cantidadCajas;
+
+          while (cajasRestantes > 0) {
+            const cajasEnPallet = Math.min(cajasRestantes, palletLimit);
+
+            // 🔹 **Intentar colocar en `P` o `PE` existentes en vez de crear `PE` nuevo**
+            let palletReutilizado: { pallet: string; cantidad: number } | null = null;
+
+            // 🔸 **Buscar en `P` normales primero**
+            for (const p of loteEntry.pallets) {
+              if (!p.pallet.startsWith("PE") && p.cantidad + cajasEnPallet <= palletLimit) {
+                palletReutilizado = p;
+                break;
+              }
+            }
+
+            // 🔸 **Si no hay espacio en `P`, buscar en `PE` existentes**
+            if (!palletReutilizado) {
+              for (const p of loteEntry.pallets) {
+                if (p.pallet.startsWith("PE") && p.cantidad + cajasEnPallet <= palletLimit) {
+                  palletReutilizado = p;
+                  break;
+                }
+              }
+            }
+
+            // 🔹 **Si encontramos un pallet con espacio, lo usamos**
+            if (palletReutilizado) {
+              palletReutilizado.cantidad += cajasEnPallet;
+
+              // 🔥 Guardamos el tracking del movimiento
+              const existingTracking = palletsTracking.find(entry => entry.pallet === palletReutilizado!.pallet);
+              if (existingTracking) {
+                existingTracking.detalle.push(`P${palletNumber} → ${cajasEnPallet}`);
+              } else {
+                palletsTracking.push({ pallet: palletReutilizado!.pallet, detalle: [`P${palletNumber} → ${cajasEnPallet}`] });
+              }
+
+              totalCajasMovidas += cajasEnPallet;
+            } else {
+              // ✅ **Si no hay espacio, creamos un nuevo `PE`**
+              const newPallet = cajasRestantes === cantidadCajas ? `P${palletNumber}` : `PE${nextPalletNumber}`;
+              loteEntry.pallets.push({ pallet: newPallet, cantidad: cajasEnPallet });
+
+              if (cajasRestantes !== cantidadCajas) {
+                palletsTracking.push({ pallet: newPallet, detalle: [`P${palletNumber} → ${cajasEnPallet}`] });
+                totalExtraPallets++;
+                totalCajasMovidas += cajasEnPallet;
+                nextPalletNumber++;
+              }
+            }
+
+            cajasRestantes -= cajasEnPallet;
+          }
+        } else {
+          // ✅ No excede el límite, se asigna normalmente
+          loteEntry.pallets.push({ pallet: `P${palletNumber}`, cantidad: cantidadCajas });
+        }
+      }
+    }
+  });
 
   // 📌 Validación final
   lotesFinalPrevio.forEach(({ lote, pallets, totalCajas }) => {

@@ -43,25 +43,3 @@ body {
   margin-right: 10px;
 }
 
-select {
-  padding: 8px;
-  font-size: 16px;
-  border-radius: 5px;
-  border: none;
-  background-color: #333;
-  color: white;
-  transition: background-color 0.3s ease;
-}
-
-select:hover {
-  background-color: #444;
-}
-
-/* 📌 Animación sutil para botones */
-button {
-  transition: transform 0.2s ease-in-out;
-}
-
-button:hover {
-  transform: scale(1.05);
-}

@@ -25,8 +25,7 @@ const ResultsTable: React.FC<ResultsTableProps> = ({ optimizedResults }) => {
 
     try {
       const canvas = await html2canvas(tableRef.current, { 
-        scale: 3, // 🔹 Mayor resolución para mejor calidad
-        backgroundColor: "#FFFFFF", // 🔥 Forzar fondo blanco
+        backgroundColor: "#FFFFFF",
         useCORS: true, // 🔹 Evita problemas de seguridad con imágenes externas
       });
 
@@ -54,14 +53,19 @@ const ResultsTable: React.FC<ResultsTableProps> = ({ optimizedResults }) => {
           <head>
             <title>Optimización de Pallets</title>
             <style>
-              body { font-family: Arial, sans-serif; padding: 20px; color: black; }
-              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+              body { font-family: Arial, sans-serif; padding: 20px; color: black; display: flex; align-items: center; flex-direction: column; }
+              table { width: 80%; border-collapse: collapse; margin-top: 20px; }
               th, td { border: 1px solid black; padding: 10px; text-align: center; }
               th { background-color: #f2f2f2; }
+              .title { font-size: 24px; font-weight: bold; margin-bottom: 10px; margin-left: 10%; align-self: flex-start; }
+              .pallets { text-align: left; margin-left: 20px; }
+              .summary-table { margin-top: 20px; witdh: 60%; }
+              .finalIzq { text-align: left; margin-left: 20px; width: 40%; }
+              .finalDer { text-align: left; margin-left: 20px;  }
             </style>
           </head>
           <body>
-            <h2>📦 Lotes Procesados</h2>
+            <h2 class="title">📦 Lotes Procesados</h2>
             <table>
               <thead>
                 <tr><th>Lote</th><th>Pallets</th></tr>
@@ -70,9 +74,38 @@ const ResultsTable: React.FC<ResultsTableProps> = ({ optimizedResults }) => {
                 ${optimizedResults.map(data => `
                   <tr>
                     <td>${data.lote}</td>
-                    <td>${data.pallets.length > 0 ? data.pallets.join(", ") : "Sin pallets asignados"}</td>
+                    <td class="pallets">${data.pallets.length > 0 ? data.pallets.join(", ") : "Sin pallets asignados"}</td>
                   </tr>
                 `).join("")}
+              </tbody>
+            </table>
+            <h3 class="title">📊 Resumen Final</h3>
+            <table class="summary-table">
+              <tbody>
+                  <tr>
+                  <td class="finalIzq">📝 Recepción:</td>
+                  <td class="finalDer"></td>
+                </tr>
+                <tr>
+                  <td class="finalIzq">📲 Palets leídos:</td>
+                  <td class="finalDer"></td>
+                </tr>
+                <tr>
+                  <td class="finalIzq">➕ Palets añadidos:</td>
+                  <td  class="finalDer">${optimizedResults.length > 0 ? optimizedResults[optimizedResults.length - 1].extraPallets : 0}</td>
+                </tr>
+                <tr>
+                  <td class="finalIzq">📦 Cajas movidas:</td>
+                  <td class="finalDer">${optimizedResults.length > 0 ? optimizedResults[optimizedResults.length - 1].cajasMovidas : 0}</td>
+                </tr>
+                <tr>
+                  <td class="finalIzq">⏱️ Tiempo:</td>
+                  <td class="finalDer"></td>
+                </tr>
+                  <tr>
+                  <td class="finalIzq">🔹 Nombres:</td>
+                  <td class="finalDer"></td>
+                </tr>
               </tbody>
             </table>
           </body>
@@ -102,20 +135,16 @@ const ResultsTable: React.FC<ResultsTableProps> = ({ optimizedResults }) => {
               {optimizedResults.map((data, index) => (
                 <tr key={index}>
                   <td>{data.lote}</td>
-                  <td>{data.pallets.length > 0 ? data.pallets.join(", ") : "Sin pallets asignados"}</td>
+                  <td className="palletNum">{data.pallets.length > 0 ? data.pallets.join(", ") : "Sin pallets asignados"}</td>
                 </tr>
               ))}
             </tbody>
           </table>
 
           {/* 📌 Sección de resumen */}
-          <h3>📊 Resumen Final</h3>
+          <h3 className="title2">📊 Resumen Final</h3>
           <table className="summary-table">
             <tbody>
-              <tr>
-                <td>🛠️ Palets leídos (vacíos sin datos):</td>
-                <td>{optimizedResults.filter(p => p.pallets.length === 0).length}</td>
-              </tr>
               <tr>
                 <td>➕ Palets añadidos:</td>
                 <td>{optimizedResults.length > 0 ? optimizedResults[optimizedResults.length - 1].extraPallets : 0}</td>
