@@ -7,16 +7,18 @@ import { PackingListData } from '../processing/packingListProcessor';
 import usePalletData from '../../hooks/usePalletData';
 
 interface FileUploaderProps {
-  onFilesUploaded: (excelData: ProcessedData[], packingList: PackingListData[]) => void;
+  onFilesUploaded: (
+    excelData: ProcessedData[], 
+    packingList: PackingListData[]) => void,
+    packlistSuffix: string; // 🆕 Recibimos el packlistSuffix como prop
 }
 
-const FileUploader: React.FC<FileUploaderProps> = ({ onFilesUploaded }) => {  
+const FileUploader: React.FC<FileUploaderProps> = ({ onFilesUploaded, packlistSuffix }) => {  
   const {
     excelFile, setExcelFile,
     packingListFile, setPackingListFile,
     excelData, setExcelData,
-    packingListData, setPackingListData,
-    packlistSuffix,            // 🆕 lo sacamos del hook
+    packingListData, setPackingListData
   } = usePalletData();
   
   const [error, setError] = useState<string | null>(null);

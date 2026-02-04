@@ -55,8 +55,11 @@ const App: React.FC = () => {
             </select>
           </section>
 
-          {/* 🔹 Componente de subida de archivos */}
-          <FileUploader onFilesUploaded={handleFilesUploaded} />
+          {/* 🔹 Componente de subida de archivos y pasamos el packlistSuffix como texto */}
+          <FileUploader 
+          onFilesUploaded={handleFilesUploaded} 
+          packlistSuffix={packlistSuffix} 
+          />
         </>
       )}
 
