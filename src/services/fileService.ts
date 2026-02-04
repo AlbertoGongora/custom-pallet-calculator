@@ -1,52 +1,59 @@
 import { ProcessedData, processExcelFile } from '../features/processing/excelProcessor';
 import { PackingListData, processPackingList } from '../features/processing/packingListProcessor';
 import { detectExcelType } from './detectExcelType';
+import { processPdfPackingList } from './pdfPackingListService';
 
-/**
- * 📌 INTERFAZ `FileProcessingResult`
- * Define el resultado del procesamiento de archivos.
- */
 export interface FileProcessingResult {
   excelData?: ProcessedData[];
   packingListData?: PackingListData[];
-  extractedData?: string; // Para datos extraídos de imágenes/PDF (futuro OCR)
+  extractedData?: string;
   error?: string;
 }
 
 /**
- * 📌 FUNCIÓN `processUploadedFile`
- * Detecta el tipo de archivo y lo procesa correctamente.
- * @param file - Archivo a procesar (Excel o Packing List)
- * @returns Promesa con los datos procesados o un mensaje de error.
+ * 📌 Procesa archivos subidos (Excel / Packing List / PDF)
  */
-export const processUploadedFile = async (file: File): Promise<FileProcessingResult> => {
+export const processUploadedFile = async (
+  file: File,
+  packlistSuffix?: string
+): Promise<FileProcessingResult> => {
   try {
     const fileType = file.name.split('.').pop()?.toLowerCase();
 
-    // 📌 🔍 Si el archivo es Excel (XLSX o XLS)
+    // 🔹 Excel
     if (fileType === 'xlsx' || fileType === 'xls') {
       const detectedType = await detectExcelType(file);
 
       if (detectedType === 'excel') {
         return { excelData: await processExcelFile(file) };
-      } else if (detectedType === 'packingList') {
-        return { packingListData: await processPackingList(file, null) };
-      } else {
-        return { error: 'El archivo Excel no tiene las columnas esperadas.' };
       }
+
+      if (detectedType === 'packingList') {
+        return { packingListData: await processPackingList(file, null) };
+      }
+
+      return { error: 'El archivo Excel no tiene las columnas esperadas.' };
     }
 
-    // 📌 🔍 Si el archivo es una imagen (PNG, JPG, JPEG) o un PDF
-    if (fileType === 'png' || fileType === 'jpg' || fileType === 'jpeg' || fileType === 'pdf') {
-      console.log(`🔍 Se detectó un archivo de tipo: ${fileType}`);
-      
-      // ⚠️ Aquí iría la lógica futura para OCR
-      return { extractedData: "🔍 Datos extraídos del OCR (pendiente de implementación)" };
+    // 🔹 PDF → Packing List vía backend
+    if (fileType === 'pdf') {
+      console.log('📄 PDF detectado → enviando a backend');
+
+      return {
+        packingListData: await processPdfPackingList(file, packlistSuffix || ''),
+      };
+    }
+
+    // 🔹 Imagen (futuro OCR)
+    if (fileType === 'png' || fileType === 'jpg' || fileType === 'jpeg') {
+      return {
+        extractedData: 'OCR pendiente de implementación',
+      };
     }
 
     return { error: 'Formato de archivo no soportado.' };
   } catch (error) {
-    console.error('Error al procesar el archivo:', error);
+    console.error(error);
     return { error: `Error procesando el archivo: ${file.name}` };
   }
 };

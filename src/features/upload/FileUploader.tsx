@@ -16,6 +16,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onFilesUploaded }) => {
     packingListFile, setPackingListFile,
     excelData, setExcelData,
     packingListData, setPackingListData,
+    packlistSuffix,            // 🆕 lo sacamos del hook
   } = usePalletData();
   
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +28,8 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onFilesUploaded }) => {
    */
   const processFile = async (file: File) => {
     try {
-      const result = await processUploadedFile(file);
+      // 🆕 Pasamos packlistSuffix al servicio
+      const result = await processUploadedFile(file, packlistSuffix);
   
       if (result.error) {
         setError(result.error);
@@ -52,7 +54,12 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onFilesUploaded }) => {
       }
 
       // ✅ Comprobamos que ambos datos están listos antes de llamar a `onFilesUploaded`
-      if (newExcelData && newPackingListData && newExcelData.length > 0 && newPackingListData.length > 0) {
+      if (
+        newExcelData &&
+        newPackingListData &&
+        newExcelData.length > 0 &&
+        newPackingListData.length > 0
+      ) {
         onFilesUploaded(newExcelData, newPackingListData);
         setMissingFileMessage(null);
       } else {

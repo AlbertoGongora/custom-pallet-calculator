@@ -11,6 +11,8 @@ const usePalletData = () => {
   const [palletOption, setPalletOption] = useState<number>(16); // 🔹 Valor por defecto: 16 cajas
   const [optimizedResults, setOptimizedResults] = useState<OptimizedPallet[]>([]);
   const [isDataLoaded, setIsDataLoaded] = useState<boolean>(false);
+  const [packlistSuffix, setPacklistSuffix] = useState<string>('');
+
 
   const handleFilesUploaded = (newExcelData: ProcessedData[], newPackingListData: PackingListData[]) => {
     setExcelData(newExcelData); // ✅ Guardamos los datos del Excel
@@ -51,6 +53,8 @@ const usePalletData = () => {
     setPalletOption,
     handleFilesUploaded,
     resetProcess,
+    packlistSuffix,
+    setPacklistSuffix
   };
 };
 
