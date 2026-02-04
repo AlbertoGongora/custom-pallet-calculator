@@ -25,13 +25,13 @@ const App: React.FC = () => {
       {!isDataLoaded && (
         <section className="packinglist-suffix">
           <label htmlFor="packlistSuffix">
-            Packing list abreviado: 
+            Packing list abreviado (últimos 4 dígitos)
           </label>
           <input
             id="packlistSuffix"
             type="text"
             maxLength={4}
-            placeholder="ultimos 4 dígitos"
+            placeholder="Ej: TENA"
             value={packlistSuffix}
             onChange={(e) =>
               setPacklistSuffix(e.target.value.toUpperCase().trim())
@@ -45,15 +45,10 @@ const App: React.FC = () => {
         <>
           <section className="pallet-option">
             <label>Selecciona el máximo de cajas por palet:</label>
-<<<<<<< HEAD
             <select
               value={palletOption}
               onChange={(e) => setPalletOption(Number(e.target.value))}
             >
-=======
-            <select value={palletOption} onChange={(e) => setPalletOption(Number(e.target.value))}>
-              <option value={8}>8 Cajas</option>
->>>>>>> b2dbca834c3a041c1180118cc3f8fa8a1dd98916
               <option value={12}>12 Cajas</option>
               <option value={16}>16 Cajas</option>
             </select>
