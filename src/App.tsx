@@ -5,7 +5,6 @@ import usePalletData from "./hooks/usePalletData";
 import "./styles/App.css";
 
 const App: React.FC = () => {
-  // 🔹 Usamos el hook para manejar el estado
   const {
     optimizedResults,
     palletOption,
@@ -13,6 +12,18 @@ const App: React.FC = () => {
     setPalletOption,
     handleFilesUploaded,
     resetProcess,
+
+    // ✅ estados compartidos
+    excelFile,
+    setExcelFile,
+    packingListFile,
+    setPackingListFile,
+    excelData,
+    setExcelData,
+    packingListData,
+    setPackingListData,
+
+    // ✅ sufijo
     packlistSuffix,
     setPacklistSuffix,
   } = usePalletData();
@@ -21,7 +32,6 @@ const App: React.FC = () => {
     <main className="app-container">
       <h1 className="app-title">Custom Pallet Calculator 📦</h1>
 
-      {/* 🔹 Input de Packing List abreviado */}
       {!isDataLoaded && (
         <section className="packinglist-suffix">
           <label htmlFor="packlistSuffix">
@@ -33,14 +43,11 @@ const App: React.FC = () => {
             maxLength={4}
             placeholder="Ej: TENA"
             value={packlistSuffix}
-            onChange={(e) =>
-              setPacklistSuffix(e.target.value.toUpperCase().trim())
-            }
+            onChange={(e) => setPacklistSuffix(e.target.value.toUpperCase().trim())}
           />
         </section>
       )}
 
-      {/* 🔹 Selector de pallets y subida de archivos */}
       {!isDataLoaded && (
         <>
           <section className="pallet-option">
@@ -55,19 +62,24 @@ const App: React.FC = () => {
             </select>
           </section>
 
-          {/* 🔹 Componente de subida de archivos y pasamos el packlistSuffix como texto */}
-          <FileUploader 
-          onFilesUploaded={handleFilesUploaded} 
-          packlistSuffix={packlistSuffix} 
+          <FileUploader
+            onFilesUploaded={handleFilesUploaded}
+            packlistSuffix={packlistSuffix}
+            excelFile={excelFile}
+            setExcelFile={setExcelFile}
+            packingListFile={packingListFile}
+            setPackingListFile={setPackingListFile}
+            excelData={excelData}
+            setExcelData={setExcelData}
+            packingListData={packingListData}
+            setPackingListData={setPackingListData}
           />
         </>
       )}
 
-      {/* 🔹 Resultados */}
       {isDataLoaded && (
         <>
           <ResultsTable optimizedResults={optimizedResults} />
-
           <button className="reset-button" onClick={resetProcess}>
             🔄 Nuevo Pedido
           </button>

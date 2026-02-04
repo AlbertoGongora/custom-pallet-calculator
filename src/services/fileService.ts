@@ -1,7 +1,7 @@
-import { ProcessedData, processExcelFile } from '../features/processing/excelProcessor';
-import { PackingListData, processPackingList } from '../features/processing/packingListProcessor';
-import { detectExcelType } from './detectExcelType';
-import { processPdfPackingList } from './pdfPackingListService';
+import { ProcessedData, processExcelFile } from "../features/processing/excelProcessor";
+import { PackingListData, processPackingList } from "../features/processing/packingListProcessor";
+import { detectExcelType } from "./detectExcelType";
+import { processPdfPackingList } from "./pdfPackingListService";
 
 export interface FileProcessingResult {
   excelData?: ProcessedData[];
@@ -10,50 +10,38 @@ export interface FileProcessingResult {
   error?: string;
 }
 
-/**
- * 📌 Procesa archivos subidos (Excel / Packing List / PDF)
- */
+// ✅ ahora recibe packlistSuffix (solo se usa si es PDF)
 export const processUploadedFile = async (
   file: File,
-  packlistSuffix?: string
+  packlistSuffix: string = ""
 ): Promise<FileProcessingResult> => {
   try {
-    const fileType = file.name.split('.').pop()?.toLowerCase();
+    const fileType = file.name.split(".").pop()?.toLowerCase();
 
-    // 🔹 Excel
-    if (fileType === 'xlsx' || fileType === 'xls') {
+    if (fileType === "xlsx" || fileType === "xls") {
       const detectedType = await detectExcelType(file);
 
-      if (detectedType === 'excel') {
+      if (detectedType === "excel") {
         return { excelData: await processExcelFile(file) };
-      }
-
-      if (detectedType === 'packingList') {
+      } else if (detectedType === "packingList") {
         return { packingListData: await processPackingList(file, null) };
+      } else {
+        return { error: "El archivo Excel no tiene las columnas esperadas." };
       }
-
-      return { error: 'El archivo Excel no tiene las columnas esperadas.' };
     }
 
-    // 🔹 PDF → Packing List vía backend
-    if (fileType === 'pdf') {
-      console.log('📄 PDF detectado → enviando a backend');
-
-      return {
-        packingListData: await processPdfPackingList(file, packlistSuffix || ''),
-      };
+    // ✅ PDF => backend
+    if (fileType === "pdf") {
+      return { packingListData: await processPdfPackingList(file, packlistSuffix || "") };
     }
 
-    // 🔹 Imagen (futuro OCR)
-    if (fileType === 'png' || fileType === 'jpg' || fileType === 'jpeg') {
-      return {
-        extractedData: 'OCR pendiente de implementación',
-      };
+    if (fileType === "png" || fileType === "jpg" || fileType === "jpeg") {
+      return { extractedData: "🔍 Datos extraídos del OCR (pendiente de implementación)" };
     }
 
-    return { error: 'Formato de archivo no soportado.' };
+    return { error: "Formato de archivo no soportado." };
   } catch (error) {
-    console.error(error);
+    console.error("Error al procesar el archivo:", error);
     return { error: `Error procesando el archivo: ${file.name}` };
   }
 };

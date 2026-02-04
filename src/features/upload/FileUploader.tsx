@@ -1,61 +1,64 @@
-import React, { useState } from 'react';
-import { useDropzone } from 'react-dropzone';
-import '../../styles/fileUploader.css';
-import { processUploadedFile } from '../../services/fileService';
-import { ProcessedData } from '../processing/excelProcessor';
-import { PackingListData } from '../processing/packingListProcessor';
-import usePalletData from '../../hooks/usePalletData';
+import React, { useState } from "react";
+import { useDropzone } from "react-dropzone";
+import "../../styles/fileUploader.css";
+import { processUploadedFile } from "../../services/fileService";
+import { ProcessedData } from "../processing/excelProcessor";
+import { PackingListData } from "../processing/packingListProcessor";
 
 interface FileUploaderProps {
-  onFilesUploaded: (
-    excelData: ProcessedData[], 
-    packingList: PackingListData[]) => void,
-    packlistSuffix: string; // 🆕 Recibimos el packlistSuffix como prop
+  onFilesUploaded: (excelData: ProcessedData[], packingList: PackingListData[]) => void;
+
+  // ✅ viene del App (estado compartido)
+  packlistSuffix: string;
+
+  excelFile: File | null;
+  setExcelFile: (f: File | null) => void;
+  packingListFile: File | null;
+  setPackingListFile: (f: File | null) => void;
+
+  excelData: ProcessedData[] | null;
+  setExcelData: (d: ProcessedData[] | null) => void;
+  packingListData: PackingListData[] | null;
+  setPackingListData: (d: PackingListData[] | null) => void;
 }
 
-const FileUploader: React.FC<FileUploaderProps> = ({ onFilesUploaded, packlistSuffix }) => {  
-  const {
-    excelFile, setExcelFile,
-    packingListFile, setPackingListFile,
-    excelData, setExcelData,
-    packingListData, setPackingListData
-  } = usePalletData();
-  
+const FileUploader: React.FC<FileUploaderProps> = ({
+  onFilesUploaded,
+  packlistSuffix,
+
+  excelFile,
+  setExcelFile,
+  packingListFile,
+  setPackingListFile,
+  excelData,
+  setExcelData,
+  packingListData,
+  setPackingListData,
+}) => {
   const [error, setError] = useState<string | null>(null);
   const [missingFileMessage, setMissingFileMessage] = useState<string | null>(null);
 
-  /**
-   * 📌 `processFile`
-   * Determina el tipo de archivo y lo procesa adecuadamente.
-   */
   const processFile = async (file: File) => {
     try {
-      // 🆕 Pasamos packlistSuffix al servicio
+      // ✅ pasamos el sufijo para PDF
       const result = await processUploadedFile(file, packlistSuffix);
-  
+
       if (result.error) {
         setError(result.error);
         return;
       }
 
-      setError(null); // ✅ Eliminamos errores previos
+      setError(null);
 
-      // ✅ Guardamos los nuevos datos sin perder los anteriores
       const newExcelData = result.excelData ? result.excelData : excelData;
       const newPackingListData = result.packingListData ? result.packingListData : packingListData;
-      
+
       setExcelData(newExcelData);
       setPackingListData(newPackingListData);
 
-      if (result.excelData) {
-        setExcelFile(file);
-      }
+      if (result.excelData) setExcelFile(file);
+      if (result.packingListData) setPackingListFile(file);
 
-      if (result.packingListData) {
-        setPackingListFile(file);
-      }
-
-      // ✅ Comprobamos que ambos datos están listos antes de llamar a `onFilesUploaded`
       if (
         newExcelData &&
         newPackingListData &&
@@ -65,7 +68,6 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onFilesUploaded, packlistSu
         onFilesUploaded(newExcelData, newPackingListData);
         setMissingFileMessage(null);
       } else {
-        console.log("⚠️ Falta un archivo para procesar.");
         setMissingFileMessage("Esperando el otro archivo para procesar.");
       }
     } catch (err) {
@@ -79,7 +81,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onFilesUploaded, packlistSu
     setMissingFileMessage(null);
 
     if (acceptedFiles.length === 0) {
-      setError('No se subió ningún archivo.');
+      setError("No se subió ningún archivo.");
       return;
     }
 
@@ -91,11 +93,11 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onFilesUploaded, packlistSu
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
     accept: {
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
-      'application/vnd.ms-excel': ['.xls'],
-      'application/pdf': ['.pdf'],
-      'image/png': ['.png'],
-      'image/jpeg': ['.jpg', '.jpeg'],
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
+      "application/vnd.ms-excel": [".xls"],
+      "application/pdf": [".pdf"],
+      "image/png": [".png"],
+      "image/jpeg": [".jpg", ".jpeg"],
     },
   });
 
@@ -103,16 +105,14 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onFilesUploaded, packlistSu
     <section className="file-uploader">
       <div {...getRootProps()} className="upload-area">
         <input {...getInputProps()} />
-        <p>Arrastra 1 archivo (Excel Base o Packing List) o </p>
+        <p>Arrastra 1 archivo (Excel Base o Packing List) o</p>
         <p>haz clic para seleccionar primero uno y luego otro.</p>
       </div>
 
-      {/* 📂 Mostramos los archivos cargados */}
       {excelFile && <p>📊 Archivo Excel Ip6 cargado</p>}
       {packingListFile && <p>📄 Packing List cargado</p>}
 
-      {/* 🚨 Mensajes de error o espera */}
-      {missingFileMessage && <p className="warning"> {missingFileMessage}</p>}
+      {missingFileMessage && <p className="warning">{missingFileMessage}</p>}
       {error && <p className="error-message">❌ {error}</p>}
     </section>
   );
