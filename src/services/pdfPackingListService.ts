@@ -59,6 +59,7 @@ export async function processPdfPackingList(
   form.append('file', file);
 
   const res = await fetch(`${backendUrl}/extract`, { method: 'POST', body: form });
+  console.log(`Backend PDF response: ${res} ${res.status} ${res.statusText}`);
   if (!res.ok) {
     const txt = await res.text().catch(() => '');
     throw new Error(`❌ Error backend PDF (${res.status}): ${txt || res.statusText}`);
