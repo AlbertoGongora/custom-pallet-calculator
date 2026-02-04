@@ -49,6 +49,7 @@ const App: React.FC = () => {
               value={palletOption}
               onChange={(e) => setPalletOption(Number(e.target.value))}
             >
+              <option value={8}>8 Cajas</option>
               <option value={12}>12 Cajas</option>
               <option value={16}>16 Cajas</option>
             </select>
