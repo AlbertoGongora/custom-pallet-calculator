@@ -60,7 +60,7 @@ export async function processPdfPackingList(
   if (!backendUrl) throw new Error('❌ Falta VITE_PDF_BACKEND_URL en el .env');
 
   const suffix = upper(packlistSuffix);
-  if (!suffix) throw new Error('❌ Debes indicar el sufijo (ej: TENA)');
+  if (!suffix) throw new Error('❌ Debes indicar el sufijo del Packlist');
 
   // 1) Enviar PDF al backend
   const form = new FormData();

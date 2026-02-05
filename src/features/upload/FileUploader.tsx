@@ -38,14 +38,22 @@ const FileUploader: React.FC<FileUploaderProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [missingFileMessage, setMissingFileMessage] = useState<string | null>(null);
 
+  // ✅ NUEVO: loader para PDF
+  const [isProcessingPdf, setIsProcessingPdf] = useState<boolean>(false);
+
   const processFile = async (file: File) => {
     try {
+      const ext = file.name.split(".").pop()?.toLowerCase();
+      const isPdf = ext === "pdf";
+
+      // ✅ si es PDF, mostramos “procesando…”
+      if (isPdf) setIsProcessingPdf(true);
+
       // ✅ pasamos el sufijo para PDF
       const result = await processUploadedFile(file, packlistSuffix);
 
-      console.log('[Uploader] current suffix =', packlistSuffix);
-      console.log('[Uploader] file dropped =', file.name);
-
+      console.log("[Uploader] current suffix =", packlistSuffix);
+      console.log("[Uploader] file dropped =", file.name);
 
       if (result.error) {
         setError(result.error);
@@ -76,7 +84,10 @@ const FileUploader: React.FC<FileUploaderProps> = ({
       }
     } catch (err) {
       console.error(err);
-      setError(`Error al procesar el archivo: ${file.name}`);
+      setError(`Error al procesar el archivo: ${file.name} falta los 4 dígitos del packlist.`);
+    } finally {
+      // ✅ ocultamos el loader cuando termine (solo afectaba a PDF)
+      setIsProcessingPdf(false);
     }
   };
 
@@ -114,7 +125,16 @@ const FileUploader: React.FC<FileUploaderProps> = ({
       </div>
 
       {excelFile && <p>📊 Archivo Excel Ip6 cargado</p>}
-      {packingListFile && <p>📄 Packing List cargado</p>}
+
+      {/* ✅ NUEVO: estado intermedio mientras el PDF se procesa */}
+      {isProcessingPdf && (
+        <p className="loading-message">
+          ⏳ Procesando Packing List (PDF)<span className="dots" />
+        </p>
+      )}
+
+      {/* ✅ cuando ya tenemos packingListFile, mostramos lo de siempre */}
+      {!isProcessingPdf && packingListFile && <p>📄 Packing List cargado</p>}
 
       {missingFileMessage && <p className="warning">{missingFileMessage}</p>}
       {error && <p className="error-message">❌ {error}</p>}
