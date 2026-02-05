@@ -170,5 +170,7 @@ export async function processPdfPackingList(
     });
   }
 
+  console.log("[PDF Service] Datos extraidos del PDF:", out);
+  
   return out;
 }
