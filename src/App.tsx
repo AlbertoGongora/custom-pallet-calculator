@@ -35,13 +35,13 @@ const App: React.FC = () => {
       {!isDataLoaded && (
         <section className="packinglist-suffix">
           <label htmlFor="packlistSuffix">
-            Packing list abreviado (últimos 4 dígitos)
+            Packing list abreviado
           </label>
           <input
             id="packlistSuffix"
             type="text"
             maxLength={4}
-            placeholder="Ej: TENA"
+            placeholder="ultimos 4 digitos"
             value={packlistSuffix}
             onChange={(e) => setPacklistSuffix(e.target.value.toUpperCase().trim())}
           />
