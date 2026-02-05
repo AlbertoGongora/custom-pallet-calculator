@@ -83,6 +83,8 @@ export async function processPdfPackingList(
   // 2) Leer JSON (solo una vez)
   const json = (await res.json()) as ExtractResponse;
 
+  console.log("[PDF Service] JSON recibido del backend:", json);
+
   const rawHeaders = (json.columns ?? json.headers ?? json.data?.columns ?? []) as unknown[];
   const rawRows = (json.rows ?? json.data?.rows ?? []) as unknown[][];
 
