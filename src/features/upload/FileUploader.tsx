@@ -43,6 +43,10 @@ const FileUploader: React.FC<FileUploaderProps> = ({
       // ✅ pasamos el sufijo para PDF
       const result = await processUploadedFile(file, packlistSuffix);
 
+      console.log('[Uploader] current suffix =', packlistSuffix);
+      console.log('[Uploader] file dropped =', file.name);
+
+
       if (result.error) {
         setError(result.error);
         return;

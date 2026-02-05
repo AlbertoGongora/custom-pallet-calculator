@@ -18,6 +18,9 @@ export const processUploadedFile = async (
   try {
     const fileType = file.name.split(".").pop()?.toLowerCase();
 
+    console.log('[fileService] PDF detected. packlistSuffix =', packlistSuffix);
+
+
     if (fileType === "xlsx" || fileType === "xls") {
       const detectedType = await detectExcelType(file);
 

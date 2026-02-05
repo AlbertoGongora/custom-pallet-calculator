@@ -58,14 +58,40 @@ export async function processPdfPackingList(
   const form = new FormData();
   form.append('file', file);
 
+  // justo antes del fetch
+  console.log('[PDF] backendUrl =', backendUrl);
+  console.log('[PDF] suffix =', suffix);
+  console.log('[PDF] file =', { name: file.name, size: file.size, type: file.type });
+
   const res = await fetch(`${backendUrl}/extract`, { method: 'POST', body: form });
-  console.log(`Backend PDF response: ${res.ok} ${res.status} ${res.statusText}`);
+
+  console.log('[PDF] res.status =', res.status);
+  console.log('[PDF] res.ok =', res.ok);
+  console.log('[PDF] res.headers content-type =', res.headers.get('content-type'));
+
+  
+
   if (!res.ok) {
     const txt = await res.text().catch(() => '');
+    
     throw new Error(`❌ Error backend PDF (${res.status}): ${txt || res.statusText}`);
   }
 
-  const json = (await res.json()) as ExtractResponse;
+  const raw = await res.text().catch(() => '');
+  console.log('[PDF] raw response (first 500) =', raw.slice(0, 500));
+
+  let json = (await res.json()) as ExtractResponse;
+
+  try {
+    json = raw ? JSON.parse(raw) : null; // parse manual
+  } catch (e) {
+    console.error('[PDF] JSON parse error:', e);
+  }
+
+  console.log('[PDF] parsed json keys:', json ? Object.keys(json) : null);
+  console.log('[PDF] columns =', json?.columns ?? json?.headers ?? json?.data?.columns);
+  console.log('[PDF] rows length =', (json?.rows ?? json?.data?.rows ?? [])?.length);
+
 
   // 2) Recuperar tabla
   const headers = (json.columns ?? json.headers ?? json.data?.columns ?? []).map(norm);
